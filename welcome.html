@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, <span id="username"></span>!</h1>
+        <div id="attendanceInfo"></div>
+        <br>
+        <button onclick="Welcome to our Page()">Welcome to our Page</button>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+        document.getElementById('username').innerText = username;
+
+        fetch('/getAttendance', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: username }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            const attendanceInfoDiv = document.getElementById('attendanceInfo');
+            if (data.attendance) {
+                const formattedDate = new Date(data.attendance.dateTime).toLocaleString('en-US', {
+                    timeZone: 'Asia/Kolkata' // Display date in IST timezone
+                });
+                attendanceInfoDiv.innerHTML = `You are marked present on ${formattedDate}`;
+            } else {
+                attendanceInfoDiv.innerHTML = `You have not marked attendance today.`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+        function showAttendanceDetails() {
+            fetch('/attendanceDetails', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: username }),
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data); // Show the attendance details in an alert
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function displayRecords() {
+            recordsDiv.innerHTML = '<ul>' + records.map(record => `
+                <li>
+                    <strong>${record.name}</strong> (${record.present}) at ${record.time}
+                    ${record.signatureData ? `<br><img src="${record.signatureData}" alt="Signature" style="width:100px;height:30px;border:1px solid #000;">` : ''}
+                </li>
+            `).join('') + '</ul>';
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
